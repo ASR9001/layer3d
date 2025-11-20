@@ -1,11 +1,14 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ShoppingCart } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
+    const { user, logout } = useAuth();
+
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -73,7 +76,7 @@ export default function Navbar() {
               className="text-gray-300 hover:text-orange-400 transition-colors"
             />
             <span className="absolute -top-2 -right-2 bg-orange-500 text-xs text-black font-bold rounded-full w-4 h-4 flex items-center justify-center shadow-md">
-              2
+              20
             </span>
           </Link>
 
@@ -81,7 +84,8 @@ export default function Navbar() {
             to="/login"
             className="px-4 py-2 border border-gray-500/60 rounded-lg text-sm text-gray-200 hover:border-orange-400 hover:text-orange-400 transition-all duration-300"
           >
-            Sign In
+            {user?"Sign Out":"Sign In"}
+            
           </Link>
 
           <Link
