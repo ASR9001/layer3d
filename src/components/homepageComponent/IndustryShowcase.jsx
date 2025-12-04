@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useState, useRef, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Car,
   Heart,
@@ -11,10 +13,11 @@ import {
   CheckCircle,
   Home,
   Palette,
+  Sparkles,
+  Zap,
+  ArrowUp,
 } from "lucide-react";
-import { motion } from "framer-motion";
 
-// ✅ Industry data
 const industries = [
   {
     id: "automotive",
@@ -146,131 +149,336 @@ const industries = [
 ];
 
 export default function IndustryShowcase() {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isLocked, setIsLocked] = useState(false);
+  const containerRef = useRef(null);
+  const sectionRefs = useRef([]);
+  const scrollTimeoutRef = useRef(null);
+
+  const changeSlide = useCallback((newIndex) => {
+    if (newIndex === currentIndex || newIndex < 0 || newIndex >= industries.length) return;
+
+    setIsLocked(true);
+    setCurrentIndex(newIndex);
+
+    clearTimeout(scrollTimeoutRef.current);
+    scrollTimeoutRef.current = setTimeout(() => setIsLocked(false), 1000);
+  }, [currentIndex]);
+
+  // Intersection Observer
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const index = sectionRefs.current.findIndex(ref => ref === entry.target);
+            if (index !== -1 && index !== currentIndex) {
+              changeSlide(index);
+            }
+          }
+        });
+      },
+      {
+        threshold: 0.5,
+        rootMargin: "0px 0px -10% 0px",
+      }
+    );
+
+    sectionRefs.current.forEach((section) => {
+      if (section) observer.observe(section);
+    });
+
+    return () => {
+      sectionRefs.current.forEach((section) => {
+        if (section) observer.unobserve(section);
+      });
+    };
+  }, [currentIndex, changeSlide]);
+
+  // Initialize section refs
+  useEffect(() => {
+    sectionRefs.current = sectionRefs.current.slice(0, industries.length);
+  }, []);
+
+  const current = industries[currentIndex];
+  const Icon = current.icon;
+
   return (
-    <section id="industries" className="relative py-20 bg-gradient-to-b from-gray-950 to-black overflow-hidden">
-      {/* 🔹 Background Animation */}
+    <section
+      ref={containerRef}
+      className="relative w-full bg-white text-black overflow-visible"
+      style={{
+        height: `${industries.length * 100}vh`,
+        minHeight: `${industries.length * 100}vh`,
+      }}
+    >
+      {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
-        {Array.from({ length: 6 }).map((_, i) => (
+        {Array.from({ length: 12 }).map((_, i) => (
           <motion.div
-            key={`blob-${i}`}
-            className="absolute rounded-full bg-gradient-to-br from-orange-500/60 to-orange-600/40 blur-[180px]"
+            key={i}
+            className="absolute border border-orange-500/10 rounded-lg"
             style={{
-              top: `${Math.random() * 80}%`,
-              left: `${Math.random() * 80}%`,
-              width: `${200 + Math.random() * 250}px`,
-              height: `${200 + Math.random() * 250}px`,
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+              width: `${60 + Math.random() * 120}px`,
+              height: `${60 + Math.random() * 120}px`,
+              rotate: Math.random() * 360,
             }}
-            animate={{ y: [0, -30, 0], x: [0, 20, 0], opacity: [0.5, 0.9, 0.5] }}
+            animate={{
+              y: [0, -20, 0],
+              x: [0, 15, 0],
+              rotate: [0, 90, 180, 270, 360],
+              opacity: [0.05, 0.1, 0.05],
+            }}
             transition={{
               repeat: Infinity,
-              duration: 6 + Math.random() * 4,
-              delay: i * 0.5,
+              duration: 8 + Math.random() * 6,
+              delay: i * 0.4,
               ease: "easeInOut",
+            }}
+          />
+        ))}
+
+        {/* Floating Orange Particles */}
+        {Array.from({ length: 20 }).map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute w-1.5 h-1.5 bg-orange-500 rounded-full"
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{
+              opacity: [0, 0.8, 0],
+              scale: [0, 1, 0],
+              y: [0, -60, -120],
+              x: [0, Math.random() * 40 - 20, 0],
+            }}
+            transition={{
+              repeat: Infinity,
+              duration: 5 + Math.random() * 4,
+              delay: i * 0.3,
+            }}
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
             }}
           />
         ))}
       </div>
 
-      {/* 🔹 Content */}
-      <div className="max-w-7xl mx-auto px-6 relative z-10">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-white mb-4">Industries We Serve</h2>
-          <p className="text-lg text-gray-300 max-w-3xl mx-auto">
-            From automotive precision to artistic expression, we deliver specialized 3D printing solutions tailored to your industry’s unique needs.
-          </p>
-        </div>
-
-        {/* 🔹 Animated Grid */}
-        <motion.div
-          className="grid md:grid-cols-2 xl:grid-cols-3 gap-8"
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
-        >
-          {industries.map((industry, index) => {
-            const IconComponent = industry.icon;
-            return (
+      {/* Fixed Display Panel */}
+      <div className="sticky top-0 left-0 w-full h-screen flex items-center justify-center z-40 bg-white">
+        <div className="relative w-full h-full flex items-center justify-center">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={current.id}
+              className="relative w-full max-w-7xl mx-auto px-6 py-8 flex flex-col lg:flex-row items-center justify-center gap-12 lg:gap-16"
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -50 }}
+              transition={{ duration: 0.6 }}
+            >
+              {/* Image Section */}
               <motion.div
-                key={industry.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className="group bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-xl hover:shadow-orange-500/20 transition-all duration-300"
+                className="flex-1 flex items-center justify-center relative"
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                transition={{ duration: 0.6, delay: 0.1 }}
               >
-                {/* Image + Icon */}
-                <div className="relative aspect-video overflow-hidden">
+                <div className="relative">
+                  {/* Glow Effect */}
+                  <div className="absolute -inset-4 bg-orange-500/10 rounded-3xl blur-xl" />
+
                   <img
-                    src={industry.image}
-                    alt={industry.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    src={current.image}
+                    alt={current.title}
+                    className="relative rounded-2xl shadow-2xl w-full max-w-2xl object-cover aspect-square border-2 border-gray-200"
                   />
-                  <div className="absolute top-4 left-4 bg-gradient-to-r from-orange-500 to-yellow-400 rounded-full p-2 shadow-md">
-                    <IconComponent className="h-6 w-6 text-white" />
+
+                  {/* Industry Badge */}
+                  <motion.div
+                    className="absolute -top-4 -left-4 bg-orange-600 text-white px-6 py-3 rounded-xl font-bold text-lg shadow-lg"
+                    initial={{ scale: 0, rotate: -180 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    transition={{ duration: 0.5, delay: 0.3 }}
+                  >
+                    {currentIndex + 1} / {industries.length}
+                  </motion.div>
+                </div>
+              </motion.div>
+
+              {/* Info Section */}
+              <motion.div
+                className="max-h-[80vh] overflow-y-auto pr-2 custom-scrollbar"
+                initial={{ x: 40, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: -40, opacity: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+              >
+                {/* Header */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-orange-100 rounded-xl">
+                      <Icon className="w-8 h-8 text-orange-600" />
+                    </div>
+                    <h2 className="text-5xl lg:text-6xl font-black text-black">
+                      {current.title}
+                    </h2>
                   </div>
+
+                  <p className="text-gray-700 text-xl leading-relaxed">
+                    {current.description}
+                  </p>
                 </div>
 
-                {/* Text Content */}
-                <div className="p-6 space-y-5">
-                  <div>
-                    <h3 className="text-xl font-semibold text-white">{industry.title}</h3>
-                    <p className="text-gray-300 text-sm mt-1">{industry.description}</p>
-                  </div>
-
+                {/* Content Grid */}
+                <div className="grid gap-6">
                   {/* Capabilities */}
                   <div>
-                    <h4 className="font-semibold text-white mb-2 text-sm">Capabilities</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {industry.capabilities.map((cap) => (
-                        <span
+                    <h3 className="text-black font-black text-2xl mb-4 flex items-center gap-2">
+                      <Zap className="w-5 h-5 text-orange-600" />
+                      Capabilities
+                    </h3>
+                    <div className="flex flex-wrap gap-3">
+                      {current.capabilities.map((cap, index) => (
+                        <motion.span
                           key={cap}
-                          className="px-2 py-1 text-xs bg-white/10 text-white rounded-lg border border-white/10"
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ duration: 0.3, delay: index * 0.05 }}
+                          className="bg-orange-100 text-orange-700 rounded-xl px-4 py-2 font-semibold text-lg border border-orange-200 hover:bg-orange-200 transition-all cursor-pointer"
                         >
                           {cap}
-                        </span>
+                        </motion.span>
                       ))}
                     </div>
                   </div>
 
                   {/* Materials */}
                   <div>
-                    <h4 className="font-semibold text-white mb-2 text-sm">Materials</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {industry.materials.map((mat) => (
-                        <span
+                    <h3 className="text-black font-black text-2xl mb-4 flex items-center gap-2">
+                      <Sparkles className="w-5 h-5 text-orange-600" />
+                      Materials
+                    </h3>
+                    <div className="flex flex-wrap gap-3">
+                      {current.materials.map((mat, index) => (
+                        <motion.span
                           key={mat}
-                          className="px-2 py-1 text-xs text-gray-300 border border-white/20 rounded-lg"
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ duration: 0.3, delay: 0.2 + index * 0.05 }}
+                          className="bg-gray-100 text-gray-700 rounded-xl px-4 py-2 font-semibold text-lg border border-gray-200 hover:bg-gray-200 transition-all cursor-pointer"
                         >
                           {mat}
-                        </span>
+                        </motion.span>
                       ))}
                     </div>
                   </div>
 
                   {/* Applications */}
-                  <div>
-                    <h4 className="font-semibold text-white mb-2 text-sm">Applications</h4>
-                    <ul className="space-y-1">
-                      {industry.applications.slice(0, 3).map((app) => (
-                        <li key={app} className="flex items-start gap-2 text-sm text-gray-300">
-                          <CheckCircle className="h-4 w-4 text-orange-500 mt-0.5" />
-                          {app}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                 {/* Applications */}
+<div>
+  <h3 className="text-black font-black text-2xl mb-4">Applications</h3>
 
-                  {/* Button */}
-                  <button className="w-full mt-4 flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-medium rounded-xl border border-white/20 text-white bg-white/10 hover:bg-orange-500/20 transition-all duration-300">
-                    Learn More <ArrowRight className="h-4 w-4" />
-                  </button>
+  <div className="flex items-start justify-between gap-4">
+    {/* Applications List */}
+    <ul className="space-y-3 max-h-40 overflow-y-auto pr-4 custom-scrollbar flex-1">
+      {current.applications.map((app, index) => (
+        <motion.li
+          key={app}
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.3, delay: 0.4 + index * 0.05 }}
+          className="flex items-start gap-3 text-gray-700 text-lg"
+        >
+          <CheckCircle className="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" />
+          <span className="font-medium">{app}</span>
+        </motion.li>
+      ))}
+    </ul>
+
+    {/* Circular Button */}
+    <motion.button
+      whileHover={{ scale: 1.1 }}
+      whileTap={{ scale: 0.95 }}
+      className="flex items-center justify-center
+                 bg-orange-600 text-white
+                 w-16 h-16 rounded-full
+                 shadow-lg hover:bg-orange-700 transition-all duration-300"
+    >
+      <ArrowRight className="w-6 h-6" />
+    </motion.button>
+  </div>
+</div>
+
                 </div>
+
+                {/* CTA Button */}
+
               </motion.div>
-            );
-          })}
-        </motion.div>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        {/* Navigation Dots */}
+        <div className="absolute right-8 top-1/2 transform -translate-y-1/2 z-50 flex flex-col gap-4">
+          {industries.map((industry, idx) => (
+            <motion.button
+              key={industry.id}
+              onClick={() => {
+                changeSlide(idx);
+                sectionRefs.current[idx]?.scrollIntoView({
+                  behavior: "smooth",
+                  block: "center",
+                });
+              }}
+              className={`flex items-center gap-3 transition-all duration-300 ${idx === currentIndex
+                  ? "text-orange-600 scale-110"
+                  : "text-gray-400 hover:text-gray-600"
+                }`}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+            >
+              <span className={`w-3 h-3 rounded-full transition-all ${idx === currentIndex ? "bg-orange-600 scale-125" : "bg-gray-300"
+                }`} />
+              <span className={`text-sm font-bold transition-all ${idx === currentIndex ? "opacity-100" : "opacity-0"
+                }`}>
+                {industry.title}
+              </span>
+            </motion.button>
+          ))}
+        </div>
+
+        {/* Progress Bar */}
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-50 w-64 bg-gray-200 rounded-full h-2">
+          <motion.div
+            className="bg-orange-600 h-2 rounded-full"
+            initial={{ width: 0 }}
+            animate={{ width: `${((currentIndex + 1) / industries.length) * 100}%` }}
+            transition={{ duration: 0.5 }}
+          />
+        </div>
       </div>
+
+      {/* Scroll Sections (for intersection detection) */}
+      {industries.map((industry, index) => (
+        <div
+          key={industry.id}
+          ref={el => sectionRefs.current[index] = el}
+          className="w-full"
+          style={{
+            height: "85vh",
+            minHeight: "85vh",
+          }}
+        />
+      ))}
+
+      <style jsx>{`
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 3px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.3); border-radius: 3px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.5); }
+      `}</style>
     </section>
   );
 }

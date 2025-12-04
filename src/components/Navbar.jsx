@@ -1,144 +1,105 @@
-import { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { ShoppingCart } from "lucide-react";
-import { useAuth } from "../context/AuthContext";
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { Menu, X } from "lucide-react";
 
 export default function Navbar() {
-  const [isScrolled, setIsScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const location = useLocation();
-    const { user, logout } = useAuth();
-
-
-  useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   const navItems = [
-    { name: "Home", path: "/" },
-    { name: "About", path: "/about" },
-    { name: "Shop", path: "/shop" },
-    { name: "Contact", path: "/contact" },
+    { name: "ABOUT", path: "/about" },
+    { name: "SERVICES", path: "/services" },
+    { name: "INFRASTRUCTURE", path: "/infra" },
+    { name: "RESOURCES", path: "/resources" },
+    { name: "BLOG", path: "/blog" },
   ];
 
   return (
-    <nav
-      className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ${
-        isScrolled
-          ? "backdrop-blur-xl bg-black/70 shadow-[0_8px_30px_rgba(0,0,0,0.5)] border-b border-orange-500/20"
-          : "bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900"
-      }`}
-    >
-      <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-        {/* ===== Logo ===== */}
-        <Link to="/" className="flex items-center space-x-2 group">
-          <img
-            src="https://layerx3d.in/layerx-logo.svg"
-            alt="LayerX Logo"
-            className="w-28 h-14 transition-transform duration-300 group-hover:rotate-6 group-hover:scale-110"
-          />
-          {/* <span className="hidden sm:inline-block text-2xl font-extrabold tracking-tight bg-gradient-to-r from-orange-500 via-yellow-400 to-orange-500 text-transparent bg-clip-text drop-shadow-[0_0_10px_rgba(255,165,0,0.3)] transition-all duration-300 group-hover:brightness-125">
-            Layer<span className="text-white drop-shadow-[0_0_8px_#ffa500]">X</span>
-          </span> */}
+    <>
+      {/* TOP NAV */}
+      <nav className="top-0 left-0 w-full z-50 bg-white py-6 px-10 flex justify-between items-center">
+        <Link to="/" className="text-[2.7rem] font-bold tracking-tight">
+          Cubein
         </Link>
 
-        {/* ===== Desktop Menu ===== */}
-        <ul className="hidden md:flex space-x-8">
-          {navItems.map((item) => (
-            <li key={item.name}>
+        <button onClick={() => setMenuOpen(true)}>
+          <Menu size={40} className="text-black" />
+        </button>
+      </nav>
+
+      {/* RIGHT HALF ONLY OVERLAY */}
+      {menuOpen && (
+        <div
+          className="fixed right-0 top-0 w-[60%] md:w-[40%] h-full bg-black/30 backdrop-blur-sm z-[65]"
+          onClick={() => setMenuOpen(false)}
+        />
+      )}
+
+      {/* RIGHT MENU PANEL */}
+      <div
+        className={`
+          fixed right-0 top-0 h-full w-[60%] md:w-[60%]
+          bg-white z-[80] p-[80px]
+          transition-transform duration-500
+          overflow-y-scroll
+          ${menuOpen ? "translate-x-0" : "translate-x-full"}
+        `}
+      >
+        {/* CLOSE BUTTON */}
+        <button
+          className="absolute right-10 top-10"
+          onClick={() => setMenuOpen(false)}
+        >
+          <X size={40} className="text-black" />
+        </button>
+
+        {/* CONTENT WRAPPER */}
+        <div className="mt-24 pr-4">
+
+          {/* SOCIAL ICONS */}
+          <div className="flex space-x-8 mb-16 text-[30px]">
+            <i className="fa-brands fa-facebook"></i>
+            <i className="fa-brands fa-linkedin"></i>
+            <i className="fa-brands fa-instagram"></i>
+          </div>
+
+          {/* CONTACT (BIG LIKE CUBEIN) */}
+          <p className="text-[54px] font-light leading-[1.1]">
+            +91-884-955-4035
+          </p>
+
+          <p className="text-[48px] font-light leading-[1.1] mt-10">
+            proto@cubein.io
+          </p>
+
+          {/* MENU LINKS BIG + TALL LIKE CUBEIN */}
+          <div className="mt-20 space-y-10">
+            {navItems.map((item) => (
               <Link
+                key={item.name}
                 to={item.path}
-                className={`relative text-sm font-medium tracking-wide transition-all duration-300 hover:text-orange-400 ${
-                  location.pathname === item.path
-                    ? "text-orange-400"
-                    : "text-gray-300"
-                }`}
+                onClick={() => setMenuOpen(false)}
+                className="block text-[32px] tracking-[0.2rem] font-medium hover:text-gray-400"
               >
                 {item.name}
-                {location.pathname === item.path && (
-                  <span className="absolute -bottom-1 left-0 w-full h-[2px] bg-gradient-to-r from-orange-400 to-yellow-400 rounded-full"></span>
-                )}
               </Link>
-            </li>
-          ))}
-        </ul>
+            ))}
+          </div>
 
-        {/* ===== Right Side Controls ===== */}
-        <div className="hidden md:flex items-center space-x-5">
-          <Link
-            to="/cart"
-            className="relative hover:scale-110 transition-transform duration-300"
-          >
-            <ShoppingCart
-              size={22}
-              className="text-gray-300 hover:text-orange-400 transition-colors"
-            />
-            <span className="absolute -top-2 -right-2 bg-orange-500 text-xs text-black font-bold rounded-full w-4 h-4 flex items-center justify-center shadow-md">
-              20
-            </span>
-          </Link>
-
-          <Link
-            to="/login"
-            className="px-4 py-2 border border-gray-500/60 rounded-lg text-sm text-gray-200 hover:border-orange-400 hover:text-orange-400 transition-all duration-300"
-          >
-            {user?"Sign Out":"Sign In"}
-            
-          </Link>
-
-          <Link
-            to="/signup"
-            className="px-4 py-2 rounded-lg text-sm font-semibold bg-gradient-to-r from-orange-500 to-yellow-400 hover:from-orange-400 hover:to-yellow-300 text-black shadow-[0_4px_20px_rgba(255,165,0,0.4)] hover:shadow-[0_6px_25px_rgba(255,165,0,0.6)] transition-all duration-300"
-          >
-            Sign Up
-          </Link>
+          {/* BIG EXTRA SPACE LIKE CUBEIN */}
+          <div className="h-40"></div>
         </div>
-
-        {/* ===== Mobile Menu Button ===== */}
-        <button
-          onClick={() => setMenuOpen(!menuOpen)}
-          className="md:hidden text-gray-200 text-2xl focus:outline-none"
-        >
-          {menuOpen ? "✕" : "☰"}
-        </button>
       </div>
 
-      {/* ===== Mobile Menu ===== */}
-      {menuOpen && (
-        <div className="md:hidden bg-black/80 backdrop-blur-md border-t border-gray-700 animate-fade-in">
-          <ul className="flex flex-col items-center py-4 space-y-4 text-gray-300">
-            {navItems.map((item) => (
-              <li key={item.name}>
-                <Link
-                  to={item.path}
-                  onClick={() => setMenuOpen(false)}
-                  className="hover:text-orange-400 transition-all duration-300"
-                >
-                  {item.name}
-                </Link>
-              </li>
-            ))}
-
-            <li className="pt-3 border-t border-gray-700 w-3/4 text-center">
-              <Link to="/login" onClick={() => setMenuOpen(false)}>
-                Sign In
-              </Link>
-            </li>
-
-            <li>
-              <Link
-                to="/signup"
-                onClick={() => setMenuOpen(false)}
-                className="bg-gradient-to-r from-orange-500 to-yellow-400 px-5 py-2 rounded-lg text-black font-medium shadow-md hover:shadow-lg transition"
-              >
-                Sign Up
-              </Link>
-            </li>
-          </ul>
-        </div>
-      )}
-    </nav>
+      {/* LEFT IMAGE — TOUCHING MENU (NO GAP) */}
+      <img
+        src="https://images.pexels.com/photos/5864273/pexels-photo-5864273.jpeg"
+        alt="Side"
+        className={`
+          fixed left-0 top-0 h-full w-[40%] object-cover grayscale
+          z-[75] transition-transform duration-500 hidden md:block
+          ${menuOpen ? "translate-x-0" : "-translate-x-full"}
+        `}
+      />
+    </>
   );
 }
