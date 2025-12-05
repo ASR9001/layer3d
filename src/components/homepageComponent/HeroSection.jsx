@@ -1,90 +1,94 @@
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
-import AboutPage from "../../pages/About";
 
 export default function HeroSection() {
   const containerRef = useRef(null);
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
-    offset: ["start start", "end end"],
+    offset: ["start start", "end start"],
   });
 
-  // Hero text fade out
-  const opacityText = useTransform(scrollYProgress, [0, 0.3], [1, 0]);
-  
-  // Hero section scale down
-  const heroScale = useTransform(scrollYProgress, [0, 0.3], [1, 0.8]);
-  
-  // About page slide in from right
-  const aboutSlide = useTransform(scrollYProgress, [0.2, 0.5], [100, 0]);
-  const aboutOpacity = useTransform(scrollYProgress, [0.2, 0.4], [0, 1]);
+  // Parallax effects
+  const y = useTransform(scrollYProgress, [0, 1], [0, -100]);
+  const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
+  const scale = useTransform(scrollYProgress, [0, 0.5], [1, 0.9]);
 
   return (
-    <section ref={containerRef} className="relative h-[200vh] bg-white overflow-hidden">
-      {/* =============== HERO SECTION =============== */}
+    <section 
+      ref={containerRef} 
+      className="relative  bg-white overflow-hidden "
+    >
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        {Array.from({ length: 15 }).map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute border border-orange-500/10 rounded-lg"
+            style={{
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+              width: `${40 + Math.random() * 80}px`,
+              height: `${40 + Math.random() * 80}px`,
+              rotate: Math.random() * 360,
+            }}
+            animate={{
+              y: [0, -15, 0],
+              x: [0, 10, 0],
+              rotate: [0, 180, 360],
+              opacity: [0.03, 0.08, 0.03],
+            }}
+            transition={{
+              repeat: Infinity,
+              duration: 6 + Math.random() * 4,
+              delay: i * 0.3,
+              ease: "easeInOut",
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Main Content Container */}
       <motion.div
         style={{ 
-          opacity: opacityText,
-          scale: heroScale 
+          y,
+          opacity,
+          scale
         }}
-        className="sticky top-0 h-screen flex flex-col lg:flex-row items-center justify-between px-6 lg:px-24 gap-8 lg:gap-16"
+        className="h-full flex flex-col lg:flex-row items-center justify-center lg:justify-between px-6 lg:px-24 gap-8 lg:gap-16 relative z-10"
       >
-        {/* Background Elements */}
-        <div className="absolute inset-0 overflow-hidden">
-          {Array.from({ length: 12 }).map((_, i) => (
-            <motion.div
-              key={i}
-              className="absolute border border-orange-500/10 rounded-lg"
-              style={{
-                top: `${Math.random() * 100}%`,
-                left: `${Math.random() * 100}%`,
-                width: `${60 + Math.random() * 120}px`,
-                height: `${60 + Math.random() * 120}px`,
-                rotate: Math.random() * 360,
-              }}
-              animate={{
-                y: [0, -20, 0],
-                x: [0, 15, 0],
-                rotate: [0, 90, 180, 270, 360],
-                opacity: [0.05, 0.1, 0.05],
-              }}
-              transition={{
-                repeat: Infinity,
-                duration: 8 + Math.random() * 6,
-                delay: i * 0.4,
-                ease: "easeInOut",
-              }}
-            />
-          ))}
-        </div>
-
-        {/* ---------- LEFT TEXT CONTENT ---------- */}
-        <div className="flex-1 space-y-8 relative z-10">
-          <motion.h1 
-            className="text-5xl lg:text-7xl xl:text-8xl font-black tracking-tight leading-tight text-black"
-            initial={{ opacity: 0, y: 40 }}
+        {/* Left Content */}
+        <div className="flex-1 space-y-8 max-w-4xl">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
+            transition={{ duration: 0.7 }}
           >
-            Accelerate{" "}
-            <span className="text-orange-600 relative">
-              Innovation
-              <motion.div
-                className="absolute -bottom-2 left-0 w-full h-1 bg-orange-600"
-                initial={{ scaleX: 0 }}
-                animate={{ scaleX: 1 }}
-                transition={{ duration: 1, delay: 0.5 }}
-              />
-            </span>{" "}
-            with End-to-End Manufacturing Excellence
-          </motion.h1>
+            <motion.h1 
+              className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tight leading-tight text-black"
+            >
+              Accelerate{" "}
+              <span className="text-orange-600 relative inline-block">
+                Innovation
+                <motion.div
+                  className="absolute -bottom-2 left-0 w-full h-1.5 bg-orange-600"
+                  initial={{ scaleX: 0 }}
+                  animate={{ scaleX: 1 }}
+                  transition={{ duration: 1, delay: 0.3 }}
+                />
+              </span>{" "}
+              <br />
+              <span>with End-to-End </span>
+              <br className="hidden lg:block" />
+              Manufacturing Excellence
+            </motion.h1>
+          </motion.div>
 
           <motion.p 
-            className="text-gray-700 max-w-3xl text-xl lg:text-2xl leading-relaxed"
+            className="text-gray-700 text-lg lg:text-xl leading-relaxed max-w-3xl"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
+            transition={{ duration: 0.7, delay: 0.2 }}
           >
             <span className="text-orange-600 font-bold">Layer X</span> is India's premier integrated manufacturing partner,
             delivering world-class industrial design, ultra-fast prototyping,
@@ -92,15 +96,15 @@ export default function HeroSection() {
           </motion.p>
 
           <motion.div 
-            className="flex flex-col sm:flex-row gap-4"
+            className="flex flex-col sm:flex-row gap-4 pt-4 "
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
+            transition={{ duration: 0.7, delay: 0.4 }}
           >
             <motion.button 
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="px-8 py-4 bg-orange-600 text-white text-lg font-bold rounded-2xl hover:bg-orange-700 transition-all shadow-lg hover:shadow-orange-500/30 flex items-center gap-3"
+              className="px-8 py-4 bg-orange-600 text-white text-lg font-bold rounded-2xl hover:bg-orange-700 transition-all shadow-lg  flex items-center gap-3 group"
             >
               Explore Our Technologies
               <motion.svg 
@@ -108,6 +112,7 @@ export default function HeroSection() {
                 fill="none" 
                 viewBox="0 0 24 24" 
                 stroke="currentColor"
+                initial={{ x: 0 }}
                 whileHover={{ x: 5 }}
                 transition={{ type: "spring", stiffness: 400, damping: 10 }}
               >
@@ -118,58 +123,93 @@ export default function HeroSection() {
             <motion.button 
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="px-8 py-4 bg-white text-black text-lg font-bold rounded-2xl border-2 border-gray-300 hover:border-orange-600 hover:text-orange-600 transition-all"
+              className="px-8 py-4 bg-white text-black text-lg font-bold rounded-2xl border-2 border-gray-300 hover:border-orange-600 hover:text-orange-600 transition-all shadow-sm"
             >
               View Case Studies
             </motion.button>
           </motion.div>
 
-          {/* Trust Badges */}
-          <motion.div 
-            className="flex flex-wrap gap-6 mt-12"
+          {/* Stats Badges */}
+          {/* <motion.div 
+            className="flex flex-wrap gap-6 pt-2"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
+            transition={{ duration: 0.7, delay: 0.6 }}
           >
             {["ISO 9001 Certified", "100+ Projects", "24/7 Support", "Fast Delivery"].map((badge, index) => (
-              <div key={badge} className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-orange-500 rounded-full" />
-                <span className="text-gray-600 font-semibold text-sm">{badge}</span>
+              <div key={badge} className="flex items-center gap-2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full shadow-sm">
+                <motion.div 
+                  className="w-2 h-2 bg-orange-500 rounded-full"
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ repeat: Infinity, duration: 2, delay: index * 0.5 }}
+                />
+                <span className="text-gray-700 font-semibold text-sm">{badge}</span>
               </div>
             ))}
-          </motion.div>
+          </motion.div> */}
         </div>
 
-        {/* ---------- RIGHT VIDEO ---------- */}
+        {/* Right Video Section */}
         <motion.div 
-          className="flex-1 flex justify-center relative"
-          initial={{ opacity: 0, x: 40 }}
+          className="flex-1 flex justify-center lg:justify-end relative max-w-lg"
+          initial={{ opacity: 0, x: 30 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8, delay: 0.3 }}
+          transition={{ duration: 0.7, delay: 0.3 }}
         >
-          {/* Glow Effect */}
-          <div className="absolute -inset-4 bg-orange-500/10 rounded-3xl blur-xl" />
-          
-          <video
-            src="https://www.cubein.io/ast/uploads/2023/11/WEBSITE_VIDEO_MAINPAGE_1.mp4"
-            autoPlay
-            loop
-            muted
-            className="w-full max-w-[500px] rounded-2xl object-cover shadow-2xl border-2 border-gray-200 relative z-10"
+          <motion.div 
+            className="absolute -inset-4 bg-gradient-to-r from-orange-500/20 to-orange-600/10 rounded-3xl blur-xl"
+            animate={{
+              opacity: [0.3, 0.5, 0.3],
+            }}
+            transition={{
+              duration: 4,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
           />
+          
+          <div className="relative">
+            <motion.div 
+              className="absolute -inset-1 rounded-2xl blur-lg opacity-50"
+              animate={{
+                scale: [1, 1.05, 1],
+              }}
+              transition={{
+                duration: 3,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            />
+            
+            <video
+              src="/ball.webm"
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="w-full h-auto max-w-md rounded-xl lg:rounded-2xl object-cover relative z-10 "
+            />
+          </div>
         </motion.div>
       </motion.div>
 
-      {/* =============== ABOUT SECTION SLIDE IN =============== */}
-      <motion.div
-        style={{
-          x: aboutSlide,
-          opacity: aboutOpacity,
-        }}
-        className="sticky top-0 h-screen bg-white"
+      {/* Scroll Indicator */}
+      {/* <motion.div 
+        className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
+        animate={{ y: [0, 10, 0] }}
+        transition={{ repeat: Infinity, duration: 2 }}
       >
-        <AboutPage />
-      </motion.div>
+        <div className="flex flex-col items-center gap-2">
+          <span className="text-gray-600 text-sm font-medium">Scroll to explore</span>
+          <div className="w-6 h-10 border-2 border-gray-400 rounded-full flex justify-center">
+            <motion.div 
+              className="w-1.5 h-3 bg-orange-600 rounded-full mt-2"
+              animate={{ y: [0, 12, 0] }}
+              transition={{ repeat: Infinity, duration: 1.5 }}
+            />
+          </div>
+        </div>
+      </motion.div> */}
     </section>
   );
 }

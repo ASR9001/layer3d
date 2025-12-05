@@ -2,6 +2,7 @@
 
 import { Target, Layers, Gauge, Shield, Clock, Printer, Sparkles, Zap, ArrowRight } from "lucide-react"
 import { motion } from "framer-motion"
+import ShopBanner from "../ShopBanner"
 
 const capabilities = [
   {
@@ -316,6 +317,8 @@ export default function TechnicalCapabilities() {
             ))}
           </div>
         </motion.div>
+
+        <ShopBanner></ShopBanner>
 
         {/* CTA Section */}
         <motion.div
